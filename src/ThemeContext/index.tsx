@@ -11,11 +11,15 @@ export const ThemeContextProvider: React.FunctionComponent<
 > = ({ children }) => {
   const [themeMode, setThemeMode] = useState<IThemeMode>(IThemeMode.LIGHT);
   const [theme, setTheme] = useState<Theme>(AppLightTheme);
-  const SYSTEM_THEME: IThemeMode = useMediaQuery(
+  const SYSTEM_THEME: Exclude<IThemeMode, IThemeMode.SYSTEM> = useMediaQuery(
     "(prefers-color-scheme: dark)"
   )
     ? IThemeMode.DARK
     : IThemeMode.LIGHT;
+
+  useEffect(() => {
+    setThemeMode(_getThemeModeToPref());
+  }, []);
 
   useEffect(() => {
     switch (themeMode) {
@@ -43,8 +47,21 @@ export const ThemeContextProvider: React.FunctionComponent<
         break;
     }
   }, [themeMode, SYSTEM_THEME]);
+
+  const _getThemeModeToPref = () => {
+    const mode = localStorage.getItem("themeMode") as IThemeMode;
+    if (mode) {
+      return mode;
+    }
+    return IThemeMode.LIGHT;
+  }
+
+  const _setThemeModeToPref = (mode: IThemeMode) => {
+    localStorage.setItem("themeMode", mode);
+  };
   const switchThemeMode = (mode: IThemeMode) => {
     setThemeMode(mode);
+    _setThemeModeToPref(mode);
   };
   return (
     <ThemeContext.Provider
